@@ -1,12 +1,30 @@
 #!/usr/bin/env ruby
 
+require "parslet"
 require "readline"
 
 def main
     loop do
-        cmd = Readline.readline("> ", true) 
-        p cmd
+        cmdline = Readline.readline("> ", true)
+        p cmdline
+        parse_tree = parse_cmd(cmdline)
+        p parse_tree
     end
+end
+
+def parse_cmd(cmdline)
+    Parser.new.parse(cmdline)
+end
+
+class Parser < Parslet::Parser
+    root :cmdline
+
+    rule(:cmdline) { command }
+    rule(:command) { argument.repeat(1) }
+    rule(:argument) { match["^\s"].repeat(1) >> space? }
+
+    rule(:space) { match["\s"].repeat(1) }
+    rule(:space?) { space.maybe }
 end
 
 main
