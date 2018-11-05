@@ -6,14 +6,15 @@ require "readline"
 def main
     loop do
         cmdline = Readline.readline("> ", true)
-        p cmdline
-        parse_tree = parse_cmd(cmdline)
-        p parse_tree
+        tree = parse_cmd(cmdline)
+        pid = tree.execute
+        Process.wait(pid)
     end
 end
 
 def parse_cmd(cmdline)
-    Parser.new.parse(cmdline)
+    tree = Parser.new.parse(cmdline)
+    Transform.new.apply(tree)
 end
 
 class Parser < Parslet::Parser
@@ -25,6 +26,21 @@ class Parser < Parslet::Parser
 
     rule(:space) { match["\s"].repeat(1).ignore }
     rule(:space?) { space.maybe }
+end
+
+class Transform < Parslet::Transform
+    rule(command: sequence(:arguments)) { Command.new(arguments) }
+    rule(argument: simple(:argument)) { argument }
+end
+
+class Command
+    def initialize(args)
+        @args = args
+    end
+
+    def execute
+        spawn(*@args)
+    end
 end
 
 main
