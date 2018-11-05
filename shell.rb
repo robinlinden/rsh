@@ -20,10 +20,10 @@ class Parser < Parslet::Parser
     root :cmdline
 
     rule(:cmdline) { command }
-    rule(:command) { argument.repeat(1) }
+    rule(:command) { argument.as(:argument).repeat(1).as(:command) }
     rule(:argument) { match["^\s"].repeat(1) >> space? }
 
-    rule(:space) { match["\s"].repeat(1) }
+    rule(:space) { match["\s"].repeat(1).ignore }
     rule(:space?) { space.maybe }
 end
 
